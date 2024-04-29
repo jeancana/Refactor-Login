@@ -1,0 +1,51 @@
+
+{{!-- Es un Formulario <form> </form> que usa un metodo Post --}}
+
+<style>
+    .login-container {
+        max-width: 360px;
+        margin: auto;
+        margin-top: 64px;
+    }
+</style>
+
+
+<div class="login-container">
+    <h1><b>KuiKi-Store</b></h1>
+    
+    <form action="/api/sessions/login" method="post" style="margin-top: 32px;">
+        <div class="input-group" style="width: 300px; margin-bottom: 32px;">
+            <span class="input-group-text" id="group1"><i class="fa-solid fa-user"></i></span>
+            <input type="email" name="email" class="form-control" placeholder="email" required="required">
+        </div>
+    
+        <div class="input-group" style="width: 300px; margin-bottom: 32px;">
+            <span class="input-group-text" id="group2"><i class="fa-solid fa-lock"></i></span>
+            <input type="password" name="password" class="form-control" placeholder="password" required="required">
+        </div>
+    
+        {{#if errorMessage}}
+        <div class="alert alert-danger" role="alert">
+            Username/Password incorrect
+        </div>
+        {{/if}}
+    
+        {{!-- link para Loguear el Usuario con su Cuenta de Github --}}
+        {{!-- Esta un link que te envia a un endpoint que llama a modulo passport y le dice:
+        Identifica el usuario con Github y llama al middleware de passport para que se encarga de todo --}}
+        <div style="margin-bottom: 32px;">
+            <a class="btn btn-primary" href="/api/sessions/github">Ingresar con Github</a>
+        </div>
+    
+        {{!-- link para restaurar el password --}}
+        <div style="margin-bottom: 32px;">
+            <a  class="btn btn-primary" href="/restore">Restaurar contraseña</a>
+        </div>
+    
+        <button type="submit" class="btn btn-success">Ingresar</button>
+    
+    
+    </form>
+</div>
+
+

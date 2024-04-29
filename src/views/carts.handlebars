@@ -1,0 +1,62 @@
+<div class="products-page">
+
+    {{!-- Boton de logout a este nivel todavia no esta activo y por eso no aparece la ruta --}}
+    {{#if user}}
+    <div>
+        <a class="btn btn-primary" href="/logout">Logout</a>
+    </div>
+    {{/if}}
+
+    <div>
+        {{!-- Mostrando Id del Carrito Seleccionado --}}
+        <span class="display-6"> CartId Nro: ${{cartId}} </span>
+    </div>
+
+    {{!-- Contenedor princial del HTLM Para Cargar la lista de productos del Carrito Seleccionado --}}
+    <div class="product-list">
+
+        {{!-- Este es un for para presentar los productos por HTML Carrito Seleccionado --}}
+        {{#each products}}
+
+        {{!-- Contenedor Presentar Cada Producto como tarjeta con "bootstrap";
+        - tiene un atributo que define las linea del borde--}}
+        <div class="product card" style="width: 18rem;">
+
+            {{!-- validacion: Si no llega una imagen, muestra la imagen "work-in-progress. --}}
+            {{#if product.thumbnail}}
+            <img src="{{product.thumbnail}}" class="card-img-top prd-img" alt="...">
+            {{else}}
+            <img src="/static/img/work-in-progress.png" alt="...">
+            {{/if}}
+
+            {{!-- Contenedort hijo para colocar los datos del producto en la tarjeta --}}
+            <div class="card-body">
+
+                {{!-- Titulo del Producto --}}
+                <h5 class="card-title">{{product.title}}</h5>
+
+                {{!-- Descripcion del Producto --}}
+                <p class="card-text">{{product.description}}</p>
+
+                {{!-- Contenedor Nieto para el precio de Cada Producto --}}
+                <div class="prd-footer">
+
+                    {{!-- Mostrando el Precio del Producto --}}
+                    <span class="display-6"> ${{product.price}} </span>
+
+                </div>
+
+            </div>
+
+        </div>
+        {{/each}}
+
+    </div>
+
+    <div>
+        {{!-- Mostrando el total de la compra --}}
+        <span class="display-6"> Total Compra: ${{total}} </span>
+    </div>
+
+
+</div>

@@ -1,0 +1,147 @@
+<div class="products-page">
+
+    {{!-- Boton de logout a este nivel todavia no esta activo y por eso no aparece la ruta --}}
+    {{#if user}}
+    <div>
+        <h2>Bienvenido "{{user}}" a la KuiKi-Store <a class="btn btn-primary" href="/logout">Logout</a></h2> 
+    </div>
+    {{/if}}
+
+    {{!-- Contenedor princial del HTLM Para Cargar la lista de productos --}}
+    <div class="product-list">
+
+        {{!-- Este es un for para presentar los productos por HTML --}}
+        {{#each products}}
+
+        {{!-- Contenedor Presentar Cada Producto como tarjeta con "bootstrap";
+        - tiene un atributo que define las linea del borde--}}
+        <div class="product card" style="width: 18rem;">
+
+            {{!-- validacion: Si no llega una imagen, muestra la imagen "work-in-progress. --}}
+            {{#if thumbnail}}
+            <img src="{{thumbnail}}" class="card-img-top prd-img" alt="...">
+            {{else}}
+            <img src="/static/img/work-in-progress.png" alt="...">
+            {{/if}}
+
+            {{!-- Contenedort hijo para colocar los datos del producto en la tarjeta --}}
+            <div class="card-body" data-pid="{{pid}}">
+
+                {{!-- Titulo del Producto --}}
+                <h5 class="card-title">{{title}}</h5>
+
+                {{!-- Descripcion del Producto --}}
+                <p class="card-text">{{description}}</p>
+
+                {{!-- Contenedor Nieto para Agregar un boton que sume los productos al carrito --}}
+                <div class="prd-footer">
+
+                    {{!-- Mostrando el Precio del Producto --}}
+                    <span class="display-6"> ${{price}} </span>
+                    {{!-- Para agragar el Producto al carrito --}}
+                    <a href="#" onclick="addToCart('{{id}}')" class="btn btn-primary anadir">Add to Cart</a>
+                    <a href="#" class="btn btn-danger remover" style="display:none">Remove from Cart</a>
+
+                </div>
+
+            </div>
+
+        </div>
+        {{/each}}
+
+    </div>
+
+    {{!-- Creamos una barra de Navegacion para el PAGINADO --}}
+    <nav aria-label="Page navigation">
+
+        <ul class="pagination">
+
+            {{!-- Este el link que te manda a la pagina anterior --}}
+            <li class="page-item {{#unless pagination.prevPage}}disabled{{/unless}}"><a class="page-link"
+                    href="/products/?page={{pagination.prevPage}}&access_token={{accessToken}}">Previous</a></li>
+
+            {{!-- Aca se Crean los Links que te llevan a todas las paginas disponibles --}}
+            {{!-- En esta caso Puntual tenemos solo 2 paginas --}}
+            {{#each pagination.pages}}
+                                                      {{!-- aca usamos la funcion helper --}}
+            <li class="page-item"><a class="page-link {{#if (eq this ../pagination.page)}}active{{/if}}"
+                    href="/products/?page={{this}}&access_token={{../accessToken}}">{{this}}</a></li>
+            {{/each}}
+
+            {{!-- Este el link que te manda a la pagina Pagina siguiente --}}
+            <li class="page-item {{#unless pagination.nextPage}}disabled{{/unless}}"><a class="page-link"
+                    href="/products/?page={{pagination.nextPage}}&access_token={{accessToken}}">Next</a></li>
+
+        </ul>
+
+    </nav>
+
+</div>
+
+
+{{!-- Funcion para enviar los Datos via POST los Productos a un Carrito de Compras Especifico --}}
+<script>
+    const LOCAL_CART = 'ecom-cartId'
+
+    // Creamos una funcion addTocart:
+    // - La pasamos como parametro el Id del producto 
+    // - Dentro de ella usamos el Metodo fetch para enviar via POST dato al Servidor
+    const addToCart = (pid) => {
+
+        console.log(`Adding ${pid} to cart`)
+        const cartId = localStorage.getItem(LOCAL_CART) ?? null;
+
+        const route = cartId ? `/api/carts/${pid}` : '/api/carts/'
+        const method = cartId ? 'PUT' : 'POST'
+
+        const postData = [
+            {
+                producto: pid,
+                cantidad: 1,
+            }
+        ];
+
+        //console.log(postData)
+
+        // Convertir el objeto postData a una cadena JSON
+        const requestBody = JSON.stringify(postData);
+
+        // POST: Agregando el Id del Producto AL CARRITO, usando el metodo fetch() 
+        // El Metodo fetch es un funcion que usamos para 
+        // 1) Hacer peticiones HTTP al Servidor (GET, POST, PUT, DELETE) 
+        // 2) Interactuar con la API Creada del lado del backend
+        fetch(route, {
+
+            method,
+            headers: {
+                'Content-Type': 'application/json', // Especificar el tipo de contenido como JSON
+                'Authorization': `Bearer {{accessToken}}`,
+            },
+
+            body: requestBody // Pasar la cadena JSON como cuerpo de la solicitud
+
+        })
+        .then(response => response.json())
+        .then(response => {
+
+            const { data } = response;
+            localStorage.setItem(LOCAL_CART, data._id)
+
+            data.products.forEach((e) => {
+                const { producto: pid } = e
+                const element = document.querySelector(`[data-pid=${pid}]`)
+                const btnAnadir = element.querySelector('a.btn.anadir')
+                const btnRemove = element.querySelector('a.btn.remover')
+
+                btnAnadir.style['display'] = 'none';
+                btnRemove.style['display'] = 'block';
+            })
+
+
+        }).catch(error => {
+
+            console.error('Error:', error);
+        });
+    }
+
+</script>
