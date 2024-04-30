@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { UsersController } from '../controllers/user.controller.mdb.js'
+import passport from 'passport'
 
 
 // LLAMANDO A LA FUNCIONES HELPERS QUE CREAMOS CON EL MODULO "bcrypt"
@@ -221,6 +222,31 @@ router.post('/restore', async (req, res) => {
 
     // Nota: Ruta para Restaurar el password de usurio usando el modulo - bcrytp
 
+})
+
+
+// 5) AUTENTICACION POR TERCEROS - Endpoint para Autenticar LOGUEAR UN Usuario con los Datos de su cuenta de Githug 
+router.get('/github', passport.authenticate('githubAuth', { scope: ['user:email'] }), async (req, res) => {
+})
+
+
+// 6)AUTENTICACION POR TERCEROS - Callback URL de git hub
+// Endpoint Callback con el trabaja Githug para regresar el paguete de Datos con el que vamos a trabajar 
+router.get('/githubcallback', passport.authenticate('githubAuth', { failureRedirect: '/login' }), async (req, res) => {
+
+    // Chequelo que esta llegando de la ruta /github (Endpoint nro 6)
+    // De aca los Datos del usuario para crear la session 
+    //console.log(req.user)
+
+    // Aca toma los datos de usuario con Base al paquete de Datos que viene de la ruta /github (Endpoint nro 13)
+    // Y creando la sesion de usuario 
+    req.session.user = { username: req.user.email, admin: true }
+
+    //res.redirect('/products') - Proximo Paso a Habilitar 
+    
+    // Por ahora Reportamos con Json que efectivamente esta logueado con Credenciales de Github
+    res.status(400).send({ status: 'ok', data: 'Autenticacion Por Terceros con GitHub Realizada' })
+    
 })
 
 
