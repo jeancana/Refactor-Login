@@ -175,7 +175,7 @@ router.get('/test-paginated', async (req, res) => {
     
     try {
 
-        const users = await controller.getUsersPaginated()
+        const users = await userController.getUsersPaginated()
         
         res.status(200).send({ status: 'OK', data: users })
 

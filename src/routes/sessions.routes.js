@@ -7,7 +7,7 @@ import passport from 'passport'
 import { createHash, isValidPassword } from '../utils.js'// Otra forma de importa todo junto
 
 // Para Trabajar la Autenticacion con Modulo Passport
-import initPassport from '../config/passport.config.js' // Importo el Metodo initPassport creado en la carpete config
+import initPassport from '../auth/passport.auth.js' // Importo el Metodo initPassport creado en la carpete config
 
 // Llamando a las funciones creadas en la carpeta Utils para trabajar con JWT
 import { generateToken, authToken } from '../utils.js'
@@ -75,18 +75,15 @@ router.post('/login', async (req, res) => {
             
             // *** Utilizando JWT ***
             // la funcion generateToken() tiene 2 parametros
-            // Parametro 1: le pasamos los Datos de usuario 
+            // Parametro 1: le pasamos los Datos de usuario - Estas SON LA CREDENCIALES - payload
             // Parametro 2: la duracion del token (tiempo de vida que va a tener) en el formato que me pide JWT
             const access_token = generateToken({ username: userInDB.email, admin: true }, '1h')
+            //console.log(access_token)
 
-            //req.headers.authorization= access_token
-            
-            //enviamos el token al cliente
-            //console.log(req.headers)
+            // Genero la Cookie para guardar en el Navegador el JWT con los datos del usuario 
+            res.cookie('cookie-JWT', access_token, { maxAge: 60 * 60 * 1000, httpOnly: true })
 
-            //res.status(200).send({ status: 'OK', data: access_token })
-
-            // Le paso el Token por la url al Cliente 
+            // Redirecciono a la Ruta /products y le paso por req.query el access_token
             res.redirect(`/products?access_token=${access_token}`)
             
 
@@ -116,6 +113,11 @@ router.get('/logout', async (req, res) => {
 
     try {
 
+        // ______ Destruyendo La cookie Creada para Usar el JWT  ______
+        // **** Nota: Mejorar el proceso de login para que funcione bien la destruccio de la cookie
+        res.clearCookie('cookie-JWT') // Al cerrar la sesion del Usuario destruyo la cookie 
+
+        // ______ Destruyendo la Session de Usuario Hecha con el Modulo Session de Express ______
         // req.session.destroy nos permite destruir la sesión
         // De esta forma, en la próxima solicitud desde ese mismo navegador, se iniciará
         // desde cero, creando una nueva sesión y volviendo a almacenar los datos deseados.
@@ -235,20 +237,28 @@ router.get('/github', passport.authenticate('githubAuth', { scope: ['user:email'
 router.get('/githubcallback', passport.authenticate('githubAuth', { failureRedirect: '/login' }), async (req, res) => {
 
     // Chequelo que esta llegando de la ruta /github (Endpoint nro 6)
-    // De aca los Datos del usuario para crear la session 
-    //console.log(req.user)
+    // De aca los Datos del usuario para crear el token 
+    console.log(req.user.email)
 
     // Aca toma los datos de usuario con Base al paquete de Datos que viene de la ruta /github (Endpoint nro 13)
-    // Y creando la sesion de usuario 
-    req.session.user = { username: req.user.email, admin: true }
+    // Y creando el JWT
+    const access_token = generateToken({ username: req.user.email, admin: true }, '1h')
 
-    //res.redirect('/products') - Proximo Paso a Habilitar 
-    
     // Por ahora Reportamos con Json que efectivamente esta logueado con Credenciales de Github
-    res.status(400).send({ status: 'ok', data: 'Autenticacion Por Terceros con GitHub Realizada' })
+    //res.status(400).send({ status: 'ok', data: 'Autenticacion Por Terceros con GitHub Realizada' })
+    
+    // Redirecciono a la Ruta /products y le paso por req.query el access_token
+    res.redirect(`/products?access_token=${access_token}`) 
+    
+    
     
 })
 
+
+// 7) Endpoint que devuelve el USER usando Estrategia de passport.authenticate 'jwtAuth'
+router.get('/current', passport.authenticate('jwtAuth', { session: false }), async (req, res) => {
+    res.status(200).send({ status: 'OK - Usario Obtenido del JWT', data: req.user }) 
+}) 
 
 
 export default router

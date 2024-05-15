@@ -30,7 +30,7 @@ import usersRouter from './routes/users.routes.js'//Ruta para el Manejo de users
 
  
 // 4) Creando la Constante PORT(Puerto) y Asignandole un puerta Conectar
-const PORT = 5000
+const PORT = 5001
 
 
 // 5) Conectando con la BD Remota - MONGO ATLAS

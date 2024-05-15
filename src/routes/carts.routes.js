@@ -65,7 +65,7 @@ router.get('/:cid', async (req, res) => {
 // *** 2) Create - Endpoint para Crear un Nuevo Carrito de productos Vacio o Con productos- Con POSTMAN  
 router.post('/', async (req, res) => {
 
-    console.log(req.body)// Verificando lo que viene por el body
+    console.log("Esto me llego por Fetch desde el cliente",req.body)// Verificando lo que viene por el body
     
     const products = req.body // Asignando lo que viene por body a una constante
     //console.log("products - Aca", (products)
@@ -143,7 +143,8 @@ router.put('/:cid', authToken, async (req, res) => {
         const { cid } = req.params
 
         //IMPORTANTE: Aca verifico que solo le estoy pasando el valor(ID) 
-        console.log(cid)
+        console.log('/api/carts/${pid} - req.params ',cid)
+        console.log('del fetch - req.body ', req.body)
 
         // Desestructuramos el req.body 
         const { products, total } = req.body

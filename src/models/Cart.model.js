@@ -57,6 +57,7 @@ schema.plugin(mongoosePaginate)
 // 2.5) CREAMOS NUESTRP PROPIO METODO ".format()" PARA POBLAR(populate) el Modelo Cart 
 // Nota: el metodo .format() Nos permiter tener siempre el conrtol sobre la instancia del Modelo Cart 
 schema.methods.format = async function () {
+    
     let total = 0
 
     const products = []

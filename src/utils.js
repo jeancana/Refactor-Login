@@ -45,8 +45,8 @@ const PRIVATE_KEY = 'JWT-Backend_Key_Jwt'
 // 1) Funciona para Crear el JWT 
 // Esta funcion se usa al momento del login del usuario como un middleware 
 // En lugar de generar una sesion, Generamos un token en el endpoint: /api/sessions/login
-// user = payload (carga util que usaremos despues para validar =)
-export const generateToken = (user, duration) => jwt.sign({ user }, PRIVATE_KEY, { expiresIn: duration })
+// payload = user (carga util datos del USUARIO INJERTADOS EN EL JWT que usaremos despues para validar)
+export const generateToken = (payload, duration) => jwt.sign({ payload }, PRIVATE_KEY, { expiresIn: duration })
 
 // 2) Funcion para Verificar y Validar el token Creado 
 export const authToken = (req, res, next) => {
@@ -72,11 +72,11 @@ export const authToken = (req, res, next) => {
     // Como si RECIBI EL TOKEN entonces lo valido 
     jwt.verify(receivedToken, PRIVATE_KEY, (err, credentials) => {
 
-        //console.log(credentials)
-        //console.log(err)
+        //console.log('jwt.verify', credentials)
+        //console.log('jwt.verify', err)
 
         // Si el token no es validdo o expiro su tiempo envio .send({ status: 'ERR', data: 'No autorizado' })
-        if (err) return res.status(403).send({ status: 'ERR', data: 'No autorizado' })
+        if (err) return res.status(403).send({ status: 'ERR', data: 'JWT No autorizado' })
 
         // Si todo esta bien guardo las credenciales 
         req.credentials = credentials

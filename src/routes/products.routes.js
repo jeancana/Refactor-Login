@@ -26,6 +26,7 @@ router.get('/', async (req, res) => {
         //console.log(req.query)
 
         // Asignamos a id el ID que nos llega req.query
+        console.log(req.query)
         let { page, limit, sort , description } = req.query
 
         // Paso 3: Usando el Metodo .getProducts() disponible en archivo product.controller.mdb.js
@@ -42,7 +43,9 @@ router.get('/', async (req, res) => {
 
     //----- Rutas para USAR del Lado del cliente -----------
     // Para mostrar:
-    // http://localhost:5000/api/products 
+    // http://localhost:5000/api/products
+
+    // Consultado hecha para Paginar desde - POSTMAN
     // http://localhost:5000/api/products/?page=1&limit=5&sort=desc&description=fruta
 
 })

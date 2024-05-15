@@ -1,8 +1,30 @@
-
 {{!-- Es un Formulario <form> </form> que usa un metodo Post --}}
 
 <style>
     .login-container {
+        max-width: 360px;
+        margin: auto;
+        margin-top: 64px;
+        padding: 32px;
+        border-radius: 0.5em;
+        border: 1px solid #bbb;
+        background-color: #ccc;
+    }
+
+    .btn-100 {
+        width: 100%;
+        margin-bottom: 0.5em;
+    }
+
+    .a2 {
+        color: #333;
+    }
+
+    .a2:hover {
+        color: #000;
+    }
+
+    <style>.login-container {
         max-width: 360px;
         margin: auto;
         margin-top: 64px;
@@ -12,40 +34,48 @@
 
 <div class="login-container">
     <h1><b>KuiKi-Store</b></h1>
-    
+
     <form action="/api/sessions/login" method="post" style="margin-top: 32px;">
         <div class="input-group" style="width: 300px; margin-bottom: 32px;">
             <span class="input-group-text" id="group1"><i class="fa-solid fa-user"></i></span>
             <input type="email" name="email" class="form-control" placeholder="email" required="required">
         </div>
-    
+
         <div class="input-group" style="width: 300px; margin-bottom: 32px;">
             <span class="input-group-text" id="group2"><i class="fa-solid fa-lock"></i></span>
             <input type="password" name="password" class="form-control" placeholder="password" required="required">
         </div>
-    
+
         {{#if errorMessage}}
         <div class="alert alert-danger" role="alert">
             Username/Password incorrect
         </div>
         {{/if}}
-    
+
+        <button type="submit" class="btn btn-success btn-100">Ingresar con usuario y clave</button>
+
         {{!-- link para Loguear el Usuario con su Cuenta de Github --}}
         {{!-- Esta un link que te envia a un endpoint que llama a modulo passport y le dice:
         Identifica el usuario con Github y llama al middleware de passport para que se encarga de todo --}}
-        <div style="margin-bottom: 32px;">
-            <a class="btn btn-primary" href="/api/sessions/github">Ingresar con Github</a>
+        <button type="reset" class="btn btn-secondary btn-100" onclick="visit('/api/sessions/github');"><i
+                class="fa-brands fa-github"></i> Ingresar con Github</button>
+
+        {{!-- link para Loguear el Usuario con su Cuenta de Google --}}
+        <button type="reset" class="btn btn-warning btn-100" onclick="visit('/api/auth/google');"><i
+                class="fa-brands fa-google"></i> Ingresar con Google</button>
+
+        <div style="margin-top: 24px;">
+            {{!-- link para restaurar el password --}}
+            Olvidaste tu clave?: <a class="a2" href="/restore">Restaurar</a>
+            <br />
+            Aún no tenés cuenta?: <a class="a2" href="/register">Registrar</a>
         </div>
-    
-        {{!-- link para restaurar el password --}}
-        <div style="margin-bottom: 32px;">
-            <a  class="btn btn-primary" href="/restore">Restaurar contraseña</a>
-        </div>
-    
-        <button type="submit" class="btn btn-success">Ingresar</button>
-    
-    
+
     </form>
 </div>
 
-
+<script>
+    const visit = (destination) => {
+        window.location.replace(destination);
+    }
+</script>

@@ -1,18 +1,3 @@
-/**
-   
-   Coleccion (NoSQL) = Tabla (SQL)
-   
-   MODELO =  Un Archivo con la descripcion Estructurada/ordenada y Jerarquica de una COLECCION(NoSQL)
-
-   *** Es un Archivo con el que le digo a MongoDb como tengo Organizado los Datos dentro mi coleccion *** 
-   *** Se Debe tener un Modelo por cada Coleccion que voy a manejar
- 
-   - Creacion del MODELO para la Coleccion users: 
-   Aca haremos el modelo que usara Mongoose,
-   que nos permite "describir" los datos que vamos manejar 
-   y Preparar la organización de la colección en la base de datos de MongoDB
-
-*/
 
 // *** PASO 1: Importar la libreria de Mongoose 
 
@@ -35,16 +20,20 @@ const collection = 'users'// Esta la coleccion creada "coleccion=users" dentro "
 // 2.2) Aca diseñamos el esquema que va a tener la coleccion 
 const schema = new mongoose.Schema({
 
-   // Aca dentro delineamos el Schema(esquema) con el funciona la Coleccion "users"
-   // IMPORTANTE: Desde el Modelo le organizo y centralizo los INDICES que requiero Crear para mejorar la busqueda
+   
    // INDICE = Primary-Key
-   
+   // IMPORTANTE: Desde el Modelo le organizo y centralizo los INDICES que requiero Crear para mejorar la busqueda
    // Para Entender la Importancia de los INDICES = index
-   first_name: { type: String, required: true, index: true },// Agregando UN INDICE NUEVO (indexacion) en el campo firstName, mongo se encarga internamente de crear el indice en la BD Y se acelera la busqueda (mejora)
-   
-   last_name: { type: String, required: true }, // le estoy pasando un Objeto como valor a la propiedad(clave)
+   // Agrego UN INDICE NUEVO (indexacion) en el campo firstName, 
+   //mongo se encarga internamente de crear el indice en la BD Y se acelera la busqueda(mejora)
+   first_name: { type: String, required: true, index: true },
+   last_name: { type: String, required: true }, 
    email: { type: String, required: true }, 
+   age: { type: Number },
+   gender: { type: String, required: false },
    password: { type: String, required: true },
+   cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
+   role: { type: String, default: 'user' }
 
 })
 

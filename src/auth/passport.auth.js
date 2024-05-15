@@ -24,15 +24,24 @@
 */
 
 import passport from 'passport'
-
 import LocalStrategy from 'passport-local'// En este caso vamos a usar la estragia de autenticacion LocalStrategy
 import GithubStrategy from 'passport-github2' // Estrategia para autenticar usuario con los datos de la Ctta Github
 import userModel from '../models/users.model.js'
 import { createHash, isValidPassword } from '../utils.js'
 
+// En Caso estoy importando todo el Modulo JWT de passport 
+// Xq necesitamos usar de elementos para trabajar en la estrategia 
+// Elemento Nro 1: jwt.Strategy - para Crear una nueva Estrategia
+// Elemento Nro 2: jwt.ExtractJwt - Para poder Manipular las Cookies con el Modulo passport
+// xq passport NO tiene acceso directo al req.cookies en forma AUTOMATICA 
+// Vamos a Tener que trabajar con el Modulo CookieParser Adicionalmente "app.use(cookieParser('secretkeyAbc123'))"
+import jwt from 'passport-jwt' //Permite Modulo passport manejar JWT (una estrategia mas) sin usar el archivo utils.js
+
 const initPassport = () => {
 
-    // Función utilizada por la estrategia registerAuth
+    // done en passport es = a lo que es next en los middleware  
+
+    // 1.1) Callback utilizada por la estrategia registerAuth
     const verifyRegistration = async (req, username, password, done) => {
 
 
@@ -50,7 +59,7 @@ const initPassport = () => {
             // El usuario ya existe, llamamos a done() para terminar el proceso de
             // passport, con null (no hay error) y false (sin devolver datos de usuario)
             if (user) return done(null, false)
-            
+
             const newUser = {
                 first_name,
                 last_name,
@@ -67,7 +76,7 @@ const initPassport = () => {
         }
     }
 
-    // Función utilizada por la estrategia restoreAuth
+    // 2.1) Callback utilizada por la estrategia restoreAuth
     const verifyRestoration = async (req, username, password, done) => {
         try {
             if (username.length === 0 || password.length === 0) {
@@ -89,21 +98,30 @@ const initPassport = () => {
         }
     }
 
-    // Función utilizada por la estrategia githubAuth
+    // 3.1) Callback utilizada por la estrategia githubAuth
     const verifyGithub = async (accessToken, refreshToken, profile, done) => {
 
         // Aca nos llega nos datos de perfil que viene de GITHUB
         // Y son los datos que vamos a poder usar 
         //console.log(profile)
         //console.log(profile._json.email)
-        
+
         try {
 
             // Buscamos si existe en nuestra base de BD ya existe un usuario con ese mi mail que llego de Github
 
+            // PARCHE 1: Tuve que hacer Trampa para que funcionara xq YO MICHELL Puso su correo como "privado"
+            // En mi perfil de Github y cuando llegando los datos de profile el campo llega null
+            // const user = await userModel.findOne({ email:'jeancanache@gmail.com' })// HARCODEADOR PARA QUE FUNCIONE
+
+            // UN Parche 2: que invente PARA PODER HACER FUNCIONAR EL LOGUIN CON GITHUB
+            //const name_parts_for_search = profile._json.name.split(' ')
+            //const user = await userModel.findOne({ first_name: name_parts_for_search[0]  })
+
+
             // ESTA ES LA "FORMA CORRECTA"
             const user = await userModel.findOne({ email: profile._json.email })
-            
+
             // Sino existe un usuario con ese mail en mi BD, entonces creamos nosotros el usuario en nuestra BD
             if (!user) {
 
@@ -134,30 +152,62 @@ const initPassport = () => {
 
         }
     }
-    
-    // IMPORTANTE: Creamos estrategia local de autenticación para registro
+
+
+    /**
+    // 4.1) Callback utilizada por la estrategia jwtAuth
+    * Si passport pudo extraer correctamente el token, devuelve el payload 
+    * (datos útiles contenidos en él), sino devuelve el error correspondiente
+    */
+    const verifyJwt = async (payload, done) => {
+        try {
+            return done(null, payload);
+        } catch (err) {
+            return done(err);
+        }
+    }
+
+    /**
+     // 4.2) Pieza de codigo utilizada por la estrategia jwtAuth dentro de la Estrategia
+     * Passport no opera con las cookies de forma directa, por lo cual creamos
+     * una función auxiliar que extrae y retorna la cookie del token si está disponible
+     */
+    const cookieExtractor = (req) => {
+        let token = null;
+        if (req && req.cookies) token = req.cookies['cookie-JWT'];
+        return token;
+    }
+
+    // 1) Estrategia local de autenticación para registro
     // Es lo primero que se debe hacer CREAR LA ESTRATEGIA 
     passport.use('registerAuth', new LocalStrategy({
         passReqToCallback: true,
         usernameField: 'email',//Esto debe ser igual a atributo name:email en la plantilla "register.handlebar"  
-        passwordField:'password'//Esto debe ser igual a atributo name:password en la plantilla "register.handlebar"
+        passwordField: 'password'//Esto debe ser igual a atributo name:password en la plantilla "register.handlebar"
     }, verifyRegistration)) // Paso la Callback verifyRegistration a la estrategia Ya Creada 
 
 
-    // Creamos estrategia local de autenticación para restauración de clave 
+    // 2) Estrategia local de autenticación para restauración de clave 
     passport.use('restoreAuth', new LocalStrategy({
         passReqToCallback: true,
         usernameField: 'email',
-        passwordField: 'password' 
+        passwordField: 'password'
     }, verifyRestoration))
-        
 
-    // Creamos estrategia para autenticación externa con Github
+
+    // 3) Estrategia para autenticación Externa con Github
     passport.use('githubAuth', new GithubStrategy({
         clientID: 'Iv1.09037589aec6251b',
         clientSecret: '22d28cd7db82b3800e8670794d5c9ff15d7ab7c9',
         callbackURL: 'http://localhost:5000/api/sessions/githubcallback'
-    }, verifyGithub)) // la funcion esta creada arriba para poder tener orden 
+    }, verifyGithub)) // la Callback esta creada arriba para poder tener orden 
+
+
+    // 4) Estrategia para autenticación con JWT
+    passport.use('jwtAuth', new jwt.Strategy({
+        jwtFromRequest: jwt.ExtractJwt.fromExtractors([cookieExtractor]),
+        secretOrKey: 'JWT-Backend_Key_Jwt' // Firma del token 
+    }, verifyJwt)) // Aca pasamos el callback 
 
 
 

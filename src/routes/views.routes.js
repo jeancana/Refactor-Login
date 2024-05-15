@@ -50,19 +50,16 @@ router.get('/register', async (req, res) => {
 // 3) Endpoint para Renderiza TODOS los Productos Paginados 
 router.get('/products', authToken, async (req, res) => {
 
-    //console.log('views-PRODUCTS', req.credentials)
-    console.log(req.headers)
-    //console.log('views-PRODUCTS-2', req.query)
-    
-    // tengo un problema para poder seguir PAGINANDO --- PREGUNTAR A AQUILES
-    // Posible conflicto de datos entre el "token" y el "page" dentro del req.query
+    //console.log('views-PRODUCTS', req.credentials) // Esta Credencial proviene del middleware "authToken"
+    //console.log('views-PRODUCTS-2', req.query) // Verificando que viene por el req.query
+   
     const { page, access_token } = req.query;
     
     
-    const user = req.credentials.user.username;
+    const user = req.credentials.payload.username;
     
-    // Si existen las credenciales del usuario Mostramos la Vista de los productos
-    if (req.credentials.user) {
+    // Si existen las Credenciales/Payload del usuario Mostramos la Vista de los productos
+    if (req.credentials.payload) {
         
         const products = await prdController.getProducts(10, page)
         //console.log(products.page )
@@ -128,11 +125,13 @@ router.get('/login' , async (req, res) => {
 
     
     // Verificando que viene por req.session.user
-    //console.log('views-LOGIN -----> ', req.query)
+    //console.log('views-LOGIN -----> ', req.credentials)
 
     // Si el usuario tiene Credenciales sigue
     if (req.credentials) {
 
+        console.log('views-LOGIN 2 -----> ', req.credentials)
+        
         // como la sesion esta ACTIVA redirecciono la ruta http://localhost:5000/products para que muestre el listo de productos
 
         res.redirect('/products')
